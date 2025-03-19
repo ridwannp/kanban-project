@@ -1,6 +1,6 @@
 import React from "react";
 import { useDrag } from "react-dnd";
-import { Col, Row, Card } from "react-bootstrap";
+import { Col, Row, Card, Badge } from "react-bootstrap";
 
 const DraggableProject = ({ project, onClick }) => {
   const [{ isDragging }, drag] = useDrag({
@@ -20,7 +20,7 @@ const DraggableProject = ({ project, onClick }) => {
       <Card.Header>
         <Row>
           <Col sm={8}>
-            <Card.Title>{project.judul}</Card.Title>
+            <Card.Title>{project.type}</Card.Title>
           </Col>
           <Col sm={4} className="float-right">
             <Card.Text>{project.assignedTo}</Card.Text>
@@ -28,11 +28,26 @@ const DraggableProject = ({ project, onClick }) => {
         </Row>
       </Card.Header>
       <Card.Body>
-        <Card.Text>{project.type}</Card.Text>
-        <Card.Text>{project.event}</Card.Text>
+        <Card.Text style={{ fontWeight: "bold" }}>
+          Headline: <br />
+          {project.judul}
+        </Card.Text>
+        <Card.Text>
+          Event:
+          <br />
+          {project.event}
+        </Card.Text>
+        <Card.Text>
+          Tempat & Tanggal Acara: <br />
+          {project.tempat}
+          {project.tanggal}
+        </Card.Text>
       </Card.Body>
       <Card.Footer>
-        <Card.Text>Deadline: {project.deadline}</Card.Text>
+        <Card.Text>
+          Deadline: {project.deadline}
+          <Badge bg="secondary"></Badge>
+        </Card.Text>
       </Card.Footer>
     </Card>
   );

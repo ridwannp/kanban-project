@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { Container } from "react-bootstrap";
 import Login from "../pages/Login";
-import Dashboard from "../pages/Dashboard";
+import Dashboard from "../pages/Dashboard/Dashboard";
 import PrivateRoutes from "../services/PrivateRoutes";
 import { useAuth } from "../services/AuthContext";
 import NavbarComponent from "./NavbarComponent";
 import Register from "../pages/Register";
+import ReportPage from "../pages/Report/ReportPage";
 
 const AppContent = () => {
   const location = useLocation();
@@ -32,7 +33,7 @@ const AppContent = () => {
       ) : (
         user && <NavbarComponent />
       )}
-      <Container className="mt-4">
+      <div>
         <Routes>
           <Route
             path="/login"
@@ -52,8 +53,16 @@ const AppContent = () => {
               </PrivateRoutes>
             }
           />
+          <Route
+            path="/report"
+            element={
+              <PrivateRoutes>
+                <ReportPage />
+              </PrivateRoutes>
+            }
+          />
         </Routes>
-      </Container>
+      </div>
     </>
   );
 };

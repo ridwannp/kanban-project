@@ -8,7 +8,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { db } from "../services/firebase";
+import { addProject, db } from "../../services/firebase";
 
 import {
   collection,
@@ -18,9 +18,17 @@ import {
   doc,
   onSnapshot,
 } from "firebase/firestore";
-import { Col, Row, Button, Form, Modal, ButtonGroup } from "react-bootstrap";
+import {
+  Col,
+  Row,
+  Button,
+  Form,
+  Modal,
+  ButtonGroup,
+  InputGroup,
+} from "react-bootstrap";
 import Column from "./Column";
-import ModalComment from "./ModalComment";
+import ModalComment from "../Dashboard/ModalComment";
 
 function Dashboard() {
   const categories = ["Todo", "Progress", "Review", "Done"];
@@ -33,6 +41,7 @@ function Dashboard() {
   const [filterAssignment, setFilterAssignment] = useState("");
   const [filterTitle, setFilterTitle] = useState("");
   const [sortPriority, setSortPriority] = useState("");
+  const [isCustomEvent, setIsCustomEvent] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "task"), (snapshot) => {
@@ -47,18 +56,7 @@ function Dashboard() {
   }, []);
 
   const handleAddProject = async () => {
-    const docRef = await addDoc(collection(db, "task"), {
-      ...newProject,
-      taskId: "",
-      status: "Todo",
-    });
-    await updateDoc(doc(db, "task", docRef.id), {
-      taskId: docRef.id,
-    });
-    setProjects([
-      ...projects,
-      { taskId: docRef.id, ...newProject, status: "Todo" },
-    ]);
+    await addProject(newProject);
     setNewProject({
       priority: "",
       type: "",
@@ -74,12 +72,25 @@ function Dashboard() {
       deadline: "",
       komentar: "",
     });
+    setIsCustomEvent(false);
     setShowModal(false);
   };
 
   const handleProjectClick = (project) => {
     setSelectedTaskId(project.taskId);
     setSelectedProject(project);
+  };
+
+  const handleEventChange = (e) => {
+    const selectedEvent = e.target.value;
+
+    if (selectedEvent === "Other") {
+      setIsCustomEvent(true);
+      setNewProject({ ...newProject, event: "" }); // Kosongkan event saat "Other" dipilih
+    } else {
+      setIsCustomEvent(false);
+      setNewProject({ ...newProject, event: selectedEvent });
+    }
   };
 
   const assignmentOptions = {
@@ -237,12 +248,14 @@ function Dashboard() {
                     <Form.Label>Event Project</Form.Label>
                     <Form.Select
                       required
-                      value={newProject.event}
-                      onChange={(e) =>
-                        setNewProject({ ...newProject, event: e.target.value })
+                      value={
+                        isCustomEvent
+                          ? "Other"
+                          : newProject.event || "Pilih Event Project"
                       }
+                      onChange={handleEventChange}
                     >
-                      <option>Pilih Event Project</option>
+                      <option disabled>Pilih Event Project</option>
                       <option value="revolution">
                         Sales & Marketing Revolution
                       </option>
@@ -253,8 +266,11 @@ function Dashboard() {
                       <option value="Business Revolution">
                         Business Revolution
                       </option>
+                      <option value="Financial Revolution">
+                        Financial Revolution
+                      </option>
                       <option value="Traine For Firewalk Trainer">
-                        Traine For Firewalk Trainer
+                        Trainee For Firewalk Trainer
                       </option>
                       <option value="Superteen Bootcamp">
                         Superteen Bootcamp
@@ -262,7 +278,24 @@ function Dashboard() {
                       <option value="Konten Sosmed TDW">
                         Konten Sosmed TDW
                       </option>
+                      <option value="Other">Other</option> {/* Opsi "Other" */}
                     </Form.Select>
+
+                    {/* Input muncul jika "Other" dipilih */}
+                    {isCustomEvent && (
+                      <Form.Control
+                        type="text"
+                        className="mt-2"
+                        placeholder="Masukkan event secara manual"
+                        value={newProject.event}
+                        onChange={(e) =>
+                          setNewProject({
+                            ...newProject,
+                            event: e.target.value,
+                          })
+                        }
+                      />
+                    )}
                   </Form.Group>
                 </Col>
               </Row>
@@ -311,25 +344,26 @@ function Dashboard() {
                 />
               </Form.Group>
               <Row>
-                <Col>
+                {/* <Col> */}
+                <Form.Group className="m-2">
+                  <Form.Label>Tempat & Tanggal Acara</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={4}
+                    required
+                    value={newProject.tempat}
+                    onChange={(e) =>
+                      setNewProject({
+                        ...newProject,
+                        tempat: e.target.value,
+                      })
+                    }
+                  />
+                </Form.Group>
+                {/* </Col> */}
+                {/* <Col>
                   <Form.Group className="m-2">
-                    <Form.Label>Tempat Acara</Form.Label>
-                    <Form.Control
-                      type="text"
-                      required
-                      value={newProject.tempat}
-                      onChange={(e) =>
-                        setNewProject({
-                          ...newProject,
-                          tempat: e.target.value,
-                        })
-                      }
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group className="m-2">
-                    <Form.Label>Tanggal Acara</Form.Label>
+                    <Form.Label>Tempat & Tanggal Acara</Form.Label>
                     <Form.Control
                       type="date"
                       required
@@ -342,7 +376,7 @@ function Dashboard() {
                       }
                     />
                   </Form.Group>
-                </Col>
+                </Col> */}
               </Row>
 
               <Form.Group className="m-2">

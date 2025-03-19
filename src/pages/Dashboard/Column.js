@@ -1,8 +1,8 @@
 import React from "react";
 import { useDrop } from "react-dnd";
-import DraggableProject from "./DraggableProject";
+import DraggableProject from "../Dashboard/DraggableProject";
 import { Card } from "react-bootstrap";
-import { db } from "../services/firebase";
+import { db } from "../../services/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 
 const Column = ({ category, projects, setProjects, onProjectClick }) => {
@@ -34,16 +34,22 @@ const Column = ({ category, projects, setProjects, onProjectClick }) => {
   return (
     <div
       ref={drop}
-      className={`column ${isOver ? "bg-light" : ""}`}
-      style={{ minHeight: "200px", padding: "10px", border: "1px solid #ccc" }}
+      className={`column p-3 rounded ${isOver ? "bg-light" : ""}`}
+      style={{
+        backgroundColor: "#f8f9fa",
+        minHeight: "400px",
+        borderRadius: "10px",
+        boxShadow: isOver ? "0px 0px 10px rgba(0,0,0,0.2)" : "none",
+      }}
     >
       <div
         style={{
-          backgroundColor: categoryColor[category] || categoryColor.Default,
+          backgroundColor: categoryColor[category] || "#6c757d",
           color: "#fff",
-          padding: "5px",
-          borderRadius: "15px",
+          padding: "10px",
+          borderRadius: "10px",
           marginBottom: "10px",
+          textAlign: "center",
         }}
       >
         <h5 className="text-center">{category}</h5>

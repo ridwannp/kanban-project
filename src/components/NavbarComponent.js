@@ -24,10 +24,22 @@ const NavbarComponent = () => {
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto">
-            <Nav.Link as={Link} to="/dashboard">
-              Dashboard
-            </Nav.Link>
+          <Nav
+            variant="underline"
+            defaultActiveKey="/dashboard"
+            className="ms-auto justify-content-center"
+          >
+            <Nav.Item>
+              <Nav.Link as={Link} to="/dashboard">
+                Dashboard
+              </Nav.Link>
+            </Nav.Item>
+
+            <Nav.Item>
+              <Nav.Link as={Link} to="/report">
+                Report
+              </Nav.Link>
+            </Nav.Item>
             {currentUser && (
               <>
                 <Nav.Link disabled>{currentUser.email}</Nav.Link>
