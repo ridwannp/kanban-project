@@ -26,8 +26,9 @@ const FileUploader = ({ selectedProject }) => {
           onChange={(e) => setFile(e.target.files[0])}
         />
       </Form.Group>
-
-      <Button onClick={handleUpload}>Upload</Button>
+      <div className="mt-3">
+        <Button onClick={handleUpload}>Upload</Button>
+      </div>
     </div>
   );
 };
