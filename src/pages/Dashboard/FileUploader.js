@@ -1,37 +1,33 @@
 import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
+import { uploadToFirestore, uploadTelegram } from "../../services/firebase";
 
-const FileUploader = ({ onFileUpload }) => {
-  const [preview, setPreview] = useState(null);
+import { doc, addDoc, collection } from "firebase/firestore";
 
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        setPreview(reader.result);
-        onFileUpload(reader.result);
-      };
+const FileUploader = ({ selectedProject }) => {
+  const [file, setFile] = useState(null);
+  const [message, setMessage] = useState("");
+  const [projectId, setProjectId] = useState("");
+
+  const handleUpload = async () => {
+    if (!file) {
+      alert("Pilih file terlebih dahulu!");
+      return;
     }
+    await uploadTelegram(file, selectedProject);
   };
-
   return (
     <div>
       <Form.Group>
-        <Form.Label>Upload Image</Form.Label>
+        <Form.Label>Upload File (Gambar/PDF)</Form.Label>
         <Form.Control
           type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
+          accept="image/*,application/pdf"
+          onChange={(e) => setFile(e.target.files[0])}
         />
       </Form.Group>
-      {preview && (
-        <div className="mt-2">
-          <p>Preview:</p>
-          <img src={preview} alt="preview" width="100" />
-        </div>
-      )}
+
+      <Button onClick={handleUpload}>Upload</Button>
     </div>
   );
 };

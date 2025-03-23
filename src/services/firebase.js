@@ -53,6 +53,108 @@ const sendTelegramNotification = async (message) => {
   }
 };
 
+export const uploadTelegram = async (file, selectedProject) => {
+  if (!file) {
+    console.error("❌ No file provided");
+    return;
+  }
+
+  let telegramApiUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/`; // Gunakan let agar bisa dimodifikasi
+  const formData = new FormData();
+
+  const message = `📂 *New File Uploaded!*\n\n🔗 *Judul Project:* ${selectedProject.judul}\n\n *Assignment:* ${selectedProject.assignedTo}\n\n *Event:* ${selectedProject.event}\n\n *Tempat:* ${selectedProject.tempat}\n\n *Deadline:* ${selectedProject.deadline}`;
+
+  formData.append("chat_id", TELEGRAM_CHAT_ID);
+  formData.append("caption", message);
+  formData.append("parse_mode", "Markdown");
+
+  // Cek tipe file (gambar atau PDF)
+  if (file.type.startsWith("image/")) {
+    formData.append("photo", file);
+    telegramApiUrl += "sendPhoto"; // Endpoint untuk gambar
+  } else if (file.type === "application/pdf") {
+    formData.append("document", file);
+    telegramApiUrl += "sendDocument"; // Endpoint untuk PDF
+  } else {
+    console.error("❌ Unsupported file type:", file.type);
+    alert("Hanya bisa upload gambar atau PDF!");
+    return;
+  }
+
+  try {
+    const response = await fetch(telegramApiUrl, {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (!result.ok) {
+      throw new Error(result.description);
+    }
+  } catch (error) {
+    console.error("❌ Error sending Telegram notification:", error);
+  }
+};
+
+export const uploadFileToFirestore = async (file, message) => {
+  try {
+    const base64File = await convertToBase64(file);
+    const fileType = file.type.split("/")[0]; // Cek apakah file gambar atau bukan
+
+    const docRef = await addDoc(collection(db, "uploads"), {
+      name: file.name,
+      type: file.type,
+      content: base64File,
+      timestamp: new Date(),
+    });
+
+    if (fileType === "image") {
+      await uploadTelegram(message, `data:${file.type};base64,${base64File}`);
+    } else {
+      console.log(
+        "📄 PDF diupload ke Firestore tetapi tidak dikirim ke Telegram."
+      );
+    }
+  } catch (error) {
+    console.error("❌ Error uploading file:", error);
+  }
+};
+
+export const uploadToFirestore = async (file, message, projectId) => {
+  if (!file) return;
+
+  try {
+    // 1️⃣ Konversi file ke Base64
+    const base64Data = await convertToBase64(file);
+
+    // 2️⃣ Simpan Base64 ke Firestore
+    const docRef = await addDoc(collection(db, "uploads"), {
+      projectId,
+      fileName: file.name,
+      fileType: file.type,
+      fileData: base64Data, // Simpan Base64 di Firestore
+      timestamp: new Date(),
+    });
+
+    console.log("✅ File saved to Firestore:", docRef.id);
+
+    // 3️⃣ Kirim Base64 ke Telegram
+    await uploadToTelegram(message, base64Data);
+  } catch (error) {
+    console.error("❌ Error uploading file:", error);
+  }
+};
+
+export const convertToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
 export const addProject = async (projectData) => {
   try {
     const newProjectData = {

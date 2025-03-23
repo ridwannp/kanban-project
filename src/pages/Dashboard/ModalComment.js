@@ -227,6 +227,7 @@ const ModalComment = ({ selectedProject, setSelectedProject, taskId }) => {
           <Tab eventKey="upload" title="Upload">
             <FileUploader
               onFileUpload={(base64Image) => setImage(base64Image)}
+              selectedProject={selectedProject}
             />
           </Tab>
         </Tabs>
