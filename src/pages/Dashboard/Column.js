@@ -1,16 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDrop } from "react-dnd";
 import DraggableProject from "../Dashboard/DraggableProject";
-import { Card } from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
 import { db } from "../../services/firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { useAuth } from "../../services/AuthContext";
 
 const Column = ({ category, projects, setProjects, onProjectClick }) => {
+  const [showModal, setShowModal] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
+  const { currentUser } = useAuth();
+  const userRole = currentUser.role;
+
   const [{ isOver }, drop] = useDrop({
     accept: "PROJECT",
-    drop: (item) => moveProject(item.id, category),
+    canDrop: () => userRole === "multimedia",
+    drop: (item) => userRole === "multimedia" && moveProject(item.id, category),
     collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
+      isOver: userRole === "multimedia" && !!monitor.isOver(),
     }),
   });
 
@@ -22,6 +29,24 @@ const Column = ({ category, projects, setProjects, onProjectClick }) => {
         project.id === id ? { ...project, status: newCategory } : project
       )
     );
+  };
+
+  const handleDelete = async (id) => {
+    console.log(projectToDelete);
+    const projectRef = doc(db, "task", projectToDelete);
+    await deleteDoc(projectRef);
+    setProjects((prev) => prev.filter((project) => project.id !== id));
+    setShowModal(false);
+  };
+
+  const handleShowModal = (projectId) => {
+    setProjectToDelete(projectId);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setProjectToDelete(null);
   };
 
   const categoryColor = {
@@ -57,12 +82,30 @@ const Column = ({ category, projects, setProjects, onProjectClick }) => {
       {projects
         .filter((project) => project.status === category)
         .map((project) => (
-          <DraggableProject
-            key={project.taskId}
-            project={project}
-            onClick={() => onProjectClick(project)}
-          />
+          <div key={project.taskId} style={{ position: "relative" }}>
+            <DraggableProject
+              project={project}
+              onClick={() => onProjectClick(project)}
+              onDelete={handleShowModal}
+              userRole={userRole}
+            />
+          </div>
         ))}
+      {/* Confirm Delete Modal */}
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Konfirmasi Hapus</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Apakah Anda yakin ingin menghapus project ini?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Batal
+          </Button>
+          <Button variant="danger" onClick={handleDelete}>
+            Hapus
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

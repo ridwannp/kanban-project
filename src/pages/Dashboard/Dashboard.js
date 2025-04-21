@@ -29,6 +29,7 @@ import {
 } from "react-bootstrap";
 import Column from "./Column";
 import ModalComment from "../Dashboard/ModalComment";
+import { useAuth } from "../../services/AuthContext";
 
 function Dashboard() {
   const categories = ["Todo", "Progress", "Review", "Done"];
@@ -42,6 +43,8 @@ function Dashboard() {
   const [filterTitle, setFilterTitle] = useState("");
   const [sortPriority, setSortPriority] = useState("");
   const [isCustomEvent, setIsCustomEvent] = useState(false);
+
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "task"), (snapshot) => {
@@ -109,7 +112,7 @@ function Dashboard() {
   }, [filterAssignment, filterTitle, sortPriority, projects]);
 
   const handleFilterAndSort = () => {
-    let filtered = projects;
+    let filtered = [...projects]; // Copy agar tidak merusak original
 
     if (filterAssignment) {
       filtered = filtered.filter(
@@ -118,19 +121,39 @@ function Dashboard() {
     }
 
     if (filterTitle) {
-      filtered = projects.filter((project) =>
+      filtered = filtered.filter((project) =>
         project?.judul?.toLowerCase().includes(filterTitle?.toLowerCase())
       );
     }
+
     const priorityOrder = { Low: 1, Middle: 2, High: 3 };
+
     if (sortPriority) {
-      filtered = filtered.sort((a, b) => {
+      filtered.sort((a, b) => {
+        const aPriority = priorityOrder[a.priority] || 0;
+        const bPriority = priorityOrder[b.priority] || 0;
+
         return sortPriority === "asc"
-          ? priorityOrder[a.priority] - priorityOrder[b.priority]
-          : priorityOrder[b.priority] - priorityOrder[a.priority];
+          ? aPriority - bPriority
+          : bPriority - aPriority;
       });
     }
+
     setFilteredProjects(filtered);
+  };
+
+  const countAssignmentsByUserAndStatus = (user) => {
+    const todo = projects.filter(
+      (project) => project.assignedTo === user && project.status === "Todo"
+    ).length;
+    const progress = projects.filter(
+      (project) => project.assignedTo === user && project.status === "Progress"
+    ).length;
+    const done = projects.filter(
+      (project) => project.assignedTo === user && project.status === "Done"
+    ).length;
+
+    return { todo, progress, done };
   };
 
   return (
@@ -141,13 +164,15 @@ function Dashboard() {
             <h2>Project Board</h2>
           </Col>
           <Col sm={8}>
-            <Button
-              className="my-3"
-              style={{ float: "right" }}
-              onClick={() => setShowModal(true)}
-            >
-              Add Project
-            </Button>
+            {currentUser.role !== "multimedia" && (
+              <Button
+                className="my-3"
+                style={{ float: "right" }}
+                onClick={() => setShowModal(true)}
+              >
+                Add Project
+              </Button>
+            )}
           </Col>
         </Row>
         <Row>
@@ -235,11 +260,17 @@ function Dashboard() {
                       }
                     >
                       <option value="">Pilih Assignment</option>
-                      {assignmentOptions[newProject.type]?.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
+                      {assignmentOptions[newProject.type]?.map((option) => {
+                        const counts = countAssignmentsByUserAndStatus(
+                          option.value
+                        );
+                        return (
+                          <option key={option.value} value={option.value}>
+                            {option.label} (Todo: {counts.todo}, Progress:{" "}
+                            {counts.progress}, Done: {counts.done})
+                          </option>
+                        );
+                      })}
                     </Form.Select>
                   </Form.Group>
                 </Col>

@@ -236,15 +236,16 @@ const ModalComment = ({ selectedProject, setSelectedProject, taskId }) => {
         <Button variant="secondary" onClick={() => setSelectedProject(null)}>
           Close
         </Button>
-        {selectedProject?.status === "Review" && (
-          <Button
-            variant="primary"
-            onClick={handleApprove}
-            className="btn btn-success ms-2"
-          >
-            Approve
-          </Button>
-        )}
+        {selectedProject?.status === "Review" &&
+          currentUser?.role === "manager" && (
+            <Button
+              variant="primary"
+              onClick={handleApprove}
+              className="btn btn-success ms-2"
+            >
+              Approve
+            </Button>
+          )}
       </Modal.Footer>
     </Modal>
   );

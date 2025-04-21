@@ -129,9 +129,9 @@ const Register = () => {
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                 >
-                  <option value="admin">Admin</option>
-                  <option value="user">User</option>
-                  <option value="guest">Guest</option>
+                  <option value="manager">Manager</option>
+                  <option value="sales">Sales</option>
+                  <option value="multimedia">Multimedia</option>
                 </Form.Select>
               </Form.Group>
               <Button disabled={loading} className="w-100 mt-3" type="submit">
