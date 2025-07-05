@@ -6,7 +6,13 @@ import { db } from "../../services/firebase";
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { useAuth } from "../../services/AuthContext";
 
-const Column = ({ category, projects, setProjects, onProjectClick }) => {
+const Column = ({
+  category,
+  projects,
+  setProjects,
+  onProjectClick,
+  onEditProject,
+}) => {
   const [showModal, setShowModal] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
   const { currentUser } = useAuth();
@@ -32,7 +38,6 @@ const Column = ({ category, projects, setProjects, onProjectClick }) => {
   };
 
   const handleDelete = async (id) => {
-    console.log(projectToDelete);
     const projectRef = doc(db, "task", projectToDelete);
     await deleteDoc(projectRef);
     setProjects((prev) => prev.filter((project) => project.id !== id));
@@ -47,6 +52,10 @@ const Column = ({ category, projects, setProjects, onProjectClick }) => {
   const handleCloseModal = () => {
     setShowModal(false);
     setProjectToDelete(null);
+  };
+
+  const handleEdit = (project) => {
+    if (onEditProject) onEditProject(project);
   };
 
   const categoryColor = {
@@ -88,6 +97,7 @@ const Column = ({ category, projects, setProjects, onProjectClick }) => {
               onClick={() => onProjectClick(project)}
               onDelete={handleShowModal}
               userRole={userRole}
+              onEdit={() => handleEdit(project)}
             />
           </div>
         ))}

@@ -2,9 +2,9 @@ import React from "react";
 import { useDrag } from "react-dnd";
 import { Col, Row, Card, Badge, Button } from "react-bootstrap";
 import moment from "moment";
-import { Trash } from "react-bootstrap-icons";
+import { Pencil, Trash } from "react-bootstrap-icons";
 
-const DraggableProject = ({ project, onClick, onDelete, userRole }) => {
+const DraggableProject = ({ project, onClick, onEdit, onDelete, userRole }) => {
   const [{ isDragging }, drag] = useDrag({
     type: "PROJECT",
     item: { id: project.id },
@@ -13,6 +13,8 @@ const DraggableProject = ({ project, onClick, onDelete, userRole }) => {
       isDragging: !!monitor.isDragging(),
     }),
   });
+
+  const isAuthorizedToEdit = userRole === "sales" || userRole === "manager";
 
   const deadline = project.deadline ? moment(project.deadline) : null;
   const today = moment();
@@ -26,12 +28,27 @@ const DraggableProject = ({ project, onClick, onDelete, userRole }) => {
     >
       <Card.Header>
         <Row>
-          <Col sm={8}>
+          <Col sm={isAuthorizedToEdit ? 4 : 8}>
             <Card.Title>{project.type}</Card.Title>
           </Col>
-          <Col sm={4} className="float-right">
+          <Col sm={4}>
             <Card.Text>{project.assignedTo}</Card.Text>
           </Col>
+          {isAuthorizedToEdit && (
+            <Col sm={4} className="text-end">
+              <Button
+                className="p-1"
+                variant="outline-primary"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(project.taskId);
+                }}
+              >
+                <Pencil size={18} />
+              </Button>
+            </Col>
+          )}
         </Row>
       </Card.Header>
       <Card.Body>

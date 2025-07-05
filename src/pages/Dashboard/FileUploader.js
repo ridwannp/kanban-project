@@ -19,10 +19,10 @@ const FileUploader = ({ selectedProject }) => {
   return (
     <div>
       <Form.Group>
-        <Form.Label>Upload File (Gambar/PDF)</Form.Label>
+        <Form.Label>Upload File (Gambar/PDF/Video)</Form.Label>
         <Form.Control
           type="file"
-          accept="image/*,application/pdf"
+          accept="image/*,application/pdf,video/*"
           onChange={(e) => setFile(e.target.files[0])}
         />
       </Form.Group>

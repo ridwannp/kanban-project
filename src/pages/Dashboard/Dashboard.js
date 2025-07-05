@@ -43,6 +43,7 @@ function Dashboard() {
   const [filterTitle, setFilterTitle] = useState("");
   const [sortPriority, setSortPriority] = useState("");
   const [isCustomEvent, setIsCustomEvent] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const { currentUser } = useAuth();
 
@@ -82,6 +83,13 @@ function Dashboard() {
   const handleProjectClick = (project) => {
     setSelectedTaskId(project.taskId);
     setSelectedProject(project);
+    setIsEditing(false);
+  };
+
+  const handleEditProject = (project) => {
+    setSelectedProject(project);
+    setSelectedTaskId(project.taskId);
+    setIsEditing(true);
   };
 
   const handleEventChange = (e) => {
@@ -520,6 +528,8 @@ function Dashboard() {
 
         <ModalComment
           taskId={selectedTaskId}
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
           selectedProject={selectedProject}
           setSelectedProject={setSelectedProject}
         />
@@ -532,6 +542,7 @@ function Dashboard() {
                 projects={filteredProjects}
                 setProjects={setProjects}
                 onProjectClick={handleProjectClick}
+                onEditProject={handleEditProject}
               />
             </Col>
           ))}

@@ -75,6 +75,9 @@ export const uploadTelegram = async (file, selectedProject) => {
   } else if (file.type === "application/pdf") {
     formData.append("document", file);
     telegramApiUrl += "sendDocument"; // Endpoint untuk PDF
+  } else if (file.type.startsWith("video/")) {
+    formData.append("video", file);
+    telegramApiUrl += "sendVideo";
   } else {
     console.error("❌ Unsupported file type:", file.type);
     alert("Hanya bisa upload gambar atau PDF!");
