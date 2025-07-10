@@ -1,21 +1,36 @@
 import React, { useState } from "react";
-import { Form, Button } from "react-bootstrap";
-import { uploadToFirestore, uploadTelegram } from "../../services/firebase";
-
-import { doc, addDoc, collection } from "firebase/firestore";
+import { Form, Button, Spinner, Alert } from "react-bootstrap";
+import { uploadTelegram } from "../../services/firebase";
 
 const FileUploader = ({ selectedProject }) => {
   const [file, setFile] = useState(null);
-  const [message, setMessage] = useState("");
-  const [projectId, setProjectId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [alertMsg, setAlertMsg] = useState("");
+  const [alertVariant, setAlertVariant] = useState("");
 
   const handleUpload = async () => {
     if (!file) {
-      alert("Pilih file terlebih dahulu!");
+      setAlertMsg("Pilih file terlebih dahulu!");
+      setAlertVariant("warning");
       return;
     }
-    await uploadTelegram(file, selectedProject);
+
+    try {
+      setIsLoading(true);
+      setAlertMsg(""); // clear alert sebelum mulai
+      await uploadTelegram(file, selectedProject);
+      setAlertMsg("Upload berhasil!");
+      setAlertVariant("success");
+      setFile(null); // reset file input kalau mau
+    } catch (error) {
+      console.error("Upload gagal:", error);
+      setAlertMsg("Upload gagal. Silakan coba lagi.");
+      setAlertVariant("danger");
+    } finally {
+      setIsLoading(false);
+    }
   };
+
   return (
     <div>
       <Form.Group>
@@ -26,8 +41,30 @@ const FileUploader = ({ selectedProject }) => {
           onChange={(e) => setFile(e.target.files[0])}
         />
       </Form.Group>
+
+      {alertMsg && (
+        <Alert variant={alertVariant} className="mt-3">
+          {alertMsg}
+        </Alert>
+      )}
+
       <div className="mt-3">
-        <Button onClick={handleUpload}>Upload</Button>
+        <Button onClick={handleUpload} disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />{" "}
+              Mengupload...
+            </>
+          ) : (
+            "Upload"
+          )}
+        </Button>
       </div>
     </div>
   );
