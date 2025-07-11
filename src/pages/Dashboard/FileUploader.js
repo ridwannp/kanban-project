@@ -8,7 +8,10 @@ const FileUploader = ({ selectedProject }) => {
   const [alertMsg, setAlertMsg] = useState("");
   const [alertVariant, setAlertVariant] = useState("");
 
-  const MAX_FILE_SIZE = 50 * 1024 * 1024; //50mb
+  const MAX_PHOTO_SIZE = 20 * 1024 * 1024; // 20MB
+  const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+  const MAX_DOC_SIZE = 50 * 1024 * 1024; // 50MB
+
   const handleUpload = async () => {
     if (!file) {
       setAlertMsg("Pilih file terlebih dahulu!");
@@ -16,8 +19,24 @@ const FileUploader = ({ selectedProject }) => {
       return;
     }
 
-    if (file.size > MAX_FILE_SIZE) {
-      setAlertMsg("File terlalu besar. Maksimum 50MB diperbolehkan.");
+    if (fileType.startsWith("image/") && file.size > MAX_PHOTO_SIZE) {
+      setAlertMsg("Gambar terlalu besar. Maksimum 20MB diperbolehkan.");
+      setAlertVariant("danger");
+      return;
+    }
+
+    if (fileType.startsWith("video/") && file.size > MAX_VIDEO_SIZE) {
+      setAlertMsg("Video terlalu besar. Maksimum 50MB diperbolehkan.");
+      setAlertVariant("danger");
+      return;
+    }
+
+    // application/pdf or other document types
+    if (
+      (fileType === "application/pdf" || fileType.startsWith("application/")) &&
+      file.size > MAX_DOC_SIZE
+    ) {
+      setAlertMsg("Dokumen terlalu besar. Maksimum 50MB diperbolehkan.");
       setAlertVariant("danger");
       return;
     }
