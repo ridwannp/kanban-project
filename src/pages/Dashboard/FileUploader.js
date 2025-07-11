@@ -18,6 +18,7 @@ const FileUploader = ({ selectedProject }) => {
       setAlertVariant("warning");
       return;
     }
+    const fileType = file.type;
 
     if (fileType.startsWith("image/") && file.size > MAX_PHOTO_SIZE) {
       setAlertMsg("Gambar terlalu besar. Maksimum 20MB diperbolehkan.");
