@@ -8,6 +8,7 @@ const FileUploader = ({ selectedProject }) => {
   const [alertMsg, setAlertMsg] = useState("");
   const [alertVariant, setAlertVariant] = useState("");
 
+  const MAX_FILE_SIZE = 50 * 1024 * 1024; //50mb
   const handleUpload = async () => {
     if (!file) {
       setAlertMsg("Pilih file terlebih dahulu!");
@@ -15,13 +16,19 @@ const FileUploader = ({ selectedProject }) => {
       return;
     }
 
+    if (file.size > MAX_FILE_SIZE) {
+      setAlertMsg("File terlalu besar. Maksimum 50MB diperbolehkan.");
+      setAlertVariant("danger");
+      return;
+    }
+
     try {
       setIsLoading(true);
-      setAlertMsg(""); // clear alert sebelum mulai
+      setAlertMsg("");
       await uploadTelegram(file, selectedProject);
       setAlertMsg("Upload berhasil!");
       setAlertVariant("success");
-      setFile(null); // reset file input kalau mau
+      setFile(null);
     } catch (error) {
       console.error("Upload gagal:", error);
       setAlertMsg("Upload gagal. Silakan coba lagi.");
