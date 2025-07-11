@@ -70,8 +70,15 @@ export const uploadTelegram = async (file, selectedProject) => {
 
   // Cek tipe file (gambar atau PDF)
   if (file.type.startsWith("image/")) {
-    formData.append("photo", file);
-    telegramApiUrl += "sendPhoto"; // Endpoint untuk gambar
+    if (file.size <= 10 * 1024 * 1024) {
+      // Gambar kecil → sendPhoto
+      formData.append("photo", file);
+      telegramApiUrl += "sendPhoto";
+    } else {
+      // Gambar besar → kirim sebagai dokumen
+      formData.append("document", file);
+      telegramApiUrl += "sendDocument";
+    }
   } else if (file.type === "application/pdf") {
     formData.append("document", file);
     telegramApiUrl += "sendDocument"; // Endpoint untuk PDF
