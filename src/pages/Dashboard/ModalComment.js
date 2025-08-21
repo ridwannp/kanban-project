@@ -76,6 +76,7 @@ const ModalComment = ({
     };
 
     fetchProjectInfo();
+    console.log(selectedProject);
 
     return () => unsubscribe();
   }, [selectedProject, isEditing]);
@@ -122,6 +123,8 @@ const ModalComment = ({
       alert("Terjadi kesalahan saat menyimpan perubahan.");
     }
   };
+
+  console.log(currentUser.role);
 
   return (
     <Modal

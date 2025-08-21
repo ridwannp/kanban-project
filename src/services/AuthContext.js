@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
+        console.log(user);
         // Ambil data dari Firestore (termasuk role)
         const docRef = doc(db, "user", user.uid);
         const docSnap = await getDoc(docRef);

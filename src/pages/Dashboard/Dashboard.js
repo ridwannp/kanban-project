@@ -109,10 +109,7 @@ function Dashboard() {
       { label: "Video Editor: Robil", value: "Robil" },
       { label: "Video Editor: Wahyu", value: "Wahyu" },
     ],
-    Design: [
-      { label: "Desain Grafis: Hilmi", value: "Hilmi" },
-      { label: "Desain Grafis: Caroline", value: "Caroline" },
-    ],
+    Design: [{ label: "Desain Grafis: Hilmi", value: "Hilmi" }],
   };
 
   useEffect(() => {
@@ -220,7 +217,6 @@ function Dashboard() {
                 <option value="Robil">Video Editor: Robil</option>
                 <option value="Wahyu">Video Editor: Wahyu</option>
                 <option value="Hilmi">Desain Grafis: Hilmi</option>
-                <option value="Caroline">Desain Grafis: Caroline</option>
               </Form.Select>
             </Form.Group>
           </Col>
