@@ -408,7 +408,7 @@ const ModalComment = ({
           Close
         </Button>
         {selectedProject?.status === "Review" &&
-          currentUser?.role === "manager" && (
+          (currentUser?.role === "user" || currentUser?.role === "manager") && (
             <Button
               variant="primary"
               onClick={handleApprove}
