@@ -31,7 +31,7 @@ const NavbarComponent = () => {
           >
             <Nav.Item>
               <Nav.Link as={Link} to="/dashboard">
-                Dashboard
+                Project Board
               </Nav.Link>
             </Nav.Item>
 

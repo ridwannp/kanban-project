@@ -4,7 +4,6 @@ import DraggableProject from "../Dashboard/DraggableProject";
 import { Button, Modal } from "react-bootstrap";
 import { db } from "../../services/firebase";
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
-import { useAuth } from "../../services/AuthContext";
 
 const Column = ({
   category,
@@ -12,18 +11,38 @@ const Column = ({
   setProjects,
   onProjectClick,
   onEditProject,
+  userRole,
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
-  const { currentUser } = useAuth();
-  const userRole = currentUser.role;
 
   const [{ isOver }, drop] = useDrop({
     accept: "PROJECT",
-    canDrop: () => userRole === "multimedia",
-    drop: (item) => userRole === "multimedia" && moveProject(item.id, category),
+    canDrop: (item) => {
+      const { currentStatus } = item;
+    
+      // Rule 1: Todo → Progress → Review - hanya multimedia
+      if ((category === "Progress" || category === "Review") && 
+          (currentStatus === "Todo" || currentStatus === "Progress")) {
+        return userRole === "multimedia";
+      }
+      
+      // Rule 2: Review → Done - hanya sales atau manager
+      if (category === "Done" && currentStatus === "Review") {
+        return userRole === "sales" || userRole === "manager";
+      }
+      
+      // Rule 3: Review → Todo - siapapun bisa
+      if (category === "Todo" && currentStatus === "Review") {
+        return true;
+      }
+      
+      // Mencegah transisi yang tidak sesuai business logic
+      return false;
+    },
+    drop: (item) => moveProject(item.id, category),
     collect: (monitor) => ({
-      isOver: userRole === "multimedia" && !!monitor.isOver(),
+      isOver: !!monitor.isOver() && !!monitor.canDrop(),
     }),
   });
 
@@ -68,51 +87,45 @@ const Column = ({
   return (
     <div
       ref={drop}
-      className={`column p-3 rounded ${isOver ? "bg-light" : ""}`}
-      style={{
-        backgroundColor: "#f8f9fa",
-        minHeight: "400px",
-        borderRadius: "10px",
-        boxShadow: isOver ? "0px 0px 10px rgba(0,0,0,0.2)" : "none",
-      }}
+      className={`kanban-column ${isOver ? "is-over" : ""}`}
     >
       <div
+        className="column-header"
         style={{
           backgroundColor: categoryColor[category] || "#6c757d",
-          color: "#fff",
-          padding: "10px",
-          borderRadius: "10px",
-          marginBottom: "10px",
-          textAlign: "center",
         }}
       >
-        <h5 className="text-center">{category}</h5>
+        <h5 className="m-0">{category}</h5>
       </div>
-      {projects
-        .filter((project) => project.status === category)
-        .map((project) => (
-          <div key={project.taskId} style={{ position: "relative" }}>
-            <DraggableProject
-              project={project}
-              onClick={() => onProjectClick(project)}
-              onDelete={handleShowModal}
-              userRole={userRole}
-              onEdit={() => handleEdit(project)}
-            />
-          </div>
-        ))}
+      
+      <div className="column-content">
+        {projects
+          .filter((project) => project.status === category)
+          .map((project) => (
+            <div key={project.taskId} style={{ position: "relative" }}>
+              <DraggableProject
+                project={project}
+                onClick={() => onProjectClick(project)}
+                onDelete={handleShowModal}
+                userRole={userRole}
+                onEdit={() => handleEdit(project)}
+              />
+            </div>
+          ))}
+      </div>
+
       {/* Confirm Delete Modal */}
-      <Modal show={showModal} onHide={handleCloseModal}>
+      <Modal show={showModal} onHide={handleCloseModal} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Konfirmasi Hapus</Modal.Title>
+          <Modal.Title>Confirm Delete</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Apakah Anda yakin ingin menghapus project ini?</Modal.Body>
+        <Modal.Body>Are you sure you want to delete this project?</Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>
-            Batal
+            Cancel
           </Button>
           <Button variant="danger" onClick={handleDelete}>
-            Hapus
+            Delete
           </Button>
         </Modal.Footer>
       </Modal>

@@ -2,13 +2,12 @@ import React from "react";
 import { useDrag } from "react-dnd";
 import { Col, Row, Card, Badge, Button } from "react-bootstrap";
 import moment from "moment";
-import { Pencil, Trash } from "react-bootstrap-icons";
+import { Pencil, Trash, Calendar, GeoAlt, Person } from "react-bootstrap-icons";
 
 const DraggableProject = ({ project, onClick, onEdit, onDelete, userRole }) => {
   const [{ isDragging }, drag] = useDrag({
     type: "PROJECT",
-    item: { id: project.id },
-    canDrag: userRole === "multimedia",
+    item: { id: project.id, currentStatus: project.status },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -20,103 +19,94 @@ const DraggableProject = ({ project, onClick, onEdit, onDelete, userRole }) => {
   const today = moment();
   const remainingDays = deadline ? deadline.diff(today, "days") : null;
 
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case "High": return "danger";
+      case "Middle": return "warning";
+      case "Low": return "info";
+      default: return "secondary";
+    }
+  };
+
   return (
-    <Card
+    <div
       ref={drag}
-      className={`mb-2 ${isDragging ? "opacity-50" : ""}`}
+      className={`kanban-card ${isDragging ? "is-dragging" : ""}`}
       onClick={onClick}
     >
-      <Card.Header>
-        <Row>
-          <Col sm={isAuthorizedToEdit ? 4 : 8}>
-            <Card.Title>{project.type}</Card.Title>
-          </Col>
-          <Col sm={4}>
-            <Card.Text>{project.assignedTo}</Card.Text>
-          </Col>
+      <div className="d-flex justify-content-between align-items-start mb-2">
+        <Badge bg="secondary" className="card-badge">{project.type}</Badge>
+        <Badge bg={getPriorityColor(project.priority)} className="card-badge text-white">
+          {project.priority || "Normal"}
+        </Badge>
+      </div>
+
+      <h6 className="card-title">{project.judul}</h6>
+      
+      <div className="card-meta">
+        <Person size={14} className="me-1" /> {project.assignedTo}
+      </div>
+
+      {project.event && (
+        <div className="card-meta">
+          <strong>Event:</strong> {project.event}
+        </div>
+      )}
+
+      {(project.tempat || project.tanggal) && (
+        <div className="card-meta">
+          <GeoAlt size={14} className="me-1" />
+          {project.tempat} {project.tanggal}
+        </div>
+      )}
+
+      <div className="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+        <div className="card-meta m-0">
+          <Calendar size={14} className="me-1" />
+          {project.deadline}
+        </div>
+        
+        <div className="d-flex gap-1">
           {isAuthorizedToEdit && (
-            <Col sm={4} className="text-end">
-              <Button
-                className="p-1"
-                variant="outline-primary"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(project.taskId);
-                }}
-              >
-                <Pencil size={18} />
-              </Button>
-            </Col>
+            <Button
+              variant="light"
+              size="sm"
+              className="p-1 text-primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(project.taskId);
+              }}
+            >
+              <Pencil size={16} />
+            </Button>
           )}
-        </Row>
-      </Card.Header>
-      <Card.Body>
-        <Row>
-          <Col md={6}>
-            <Card.Text style={{ fontWeight: "bold" }}>
-              Headline: <br />
-              {project.judul}
-            </Card.Text>
-          </Col>
-          <Col md={6}>
-            {remainingDays !== null && (
-              <Card.Text className="mt-2">
-                <Badge bg={remainingDays > 0 ? "success" : "danger"}>
-                  {remainingDays > 0
-                    ? `Sisa ${remainingDays} hari`
-                    : `Lewat ${Math.abs(remainingDays)} hari`}
-                </Badge>
-              </Card.Text>
-            )}
-          </Col>
-        </Row>
-        <br />
-        <Card.Text>
-          Event:
-          <br />
-          {project.event}
-        </Card.Text>
-        <Card.Text>
-          Tempat & Tanggal Acara: <br />
-          {project.tempat}
-          {project.tanggal}
-        </Card.Text>
-      </Card.Body>
-      <Card.Footer
-        style={{
-          backgroundColor:
-            project.priority === "High"
-              ? "#f8d7da"
-              : project.priority === "Middle"
-              ? "#fff3cd"
-              : project.priority === "Low"
-              ? "#cfe2ff"
-              : "#f8f9fa",
-        }}
-      >
-        <Row className="px-2">
-          <Col md={10}>
-            <div>Deadline: {project.deadline}</div>
-          </Col>
-          <Col md={2}>
-            {project.status === "Todo" && userRole !== "multimedia" && (
-              <Button
-                className="p-1"
-                variant="outline-danger"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(project.id);
-                }}
-              >
-                <Trash size={18} />
-              </Button>
-            )}
-          </Col>
-        </Row>
-      </Card.Footer>
-    </Card>
+          
+          {project.status === "Todo" && userRole !== "multimedia" && (
+            <Button
+              variant="light"
+              size="sm"
+              className="p-1 text-danger"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(project.id);
+              }}
+            >
+              <Trash size={16} />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {remainingDays !== null && (
+        <div className="mt-2 text-center">
+           <Badge bg={remainingDays > 0 ? "success" : "danger"} className="w-100">
+            {remainingDays > 0
+              ? `Sisa ${remainingDays} hari`
+              : `Lewat ${Math.abs(remainingDays)} hari`}
+          </Badge>
+        </div>
+      )}
+    </div>
   );
 };
 

@@ -76,8 +76,7 @@ const ModalComment = ({
     };
 
     fetchProjectInfo();
-    console.log(selectedProject);
-
+    
     return () => unsubscribe();
   }, [selectedProject, isEditing]);
 
@@ -124,8 +123,7 @@ const ModalComment = ({
     }
   };
 
-  console.log(currentUser.role);
-
+  
   return (
     <Modal
       className="custom-modal"
